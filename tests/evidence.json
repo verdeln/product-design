@@ -1,0 +1,81 @@
+{
+  "date": "2026-09-12",
+  "node": "22.16.0",
+  "typescript": "5.8.3",
+  "model": {
+    "passed": 36,
+    "failed": 0
+  },
+  "browser": "Chromium 144.0.7559.96",
+  "method": "Standalone HTML via set_content; no network navigation. Storage-unavailable path is exercised. No real-origin persistence or live services tested.",
+  "execution": "Four disjoint CASE_FILTER batches against the same standalone build.",
+  "passed": 16,
+  "failed": 0,
+  "cases": [
+    {
+      "name": "three-layouts-and-dark",
+      "status": "PASS"
+    },
+    {
+      "name": "all-navigation-destinations",
+      "status": "PASS"
+    },
+    {
+      "name": "source-to-highlight",
+      "status": "PASS"
+    },
+    {
+      "name": "attach-chat-without-implicit-task",
+      "status": "PASS"
+    },
+    {
+      "name": "drag-context-without-send",
+      "status": "PASS"
+    },
+    {
+      "name": "range-selection-removes-links-only",
+      "status": "PASS"
+    },
+    {
+      "name": "stale-review-then-exact-publication",
+      "status": "PASS"
+    },
+    {
+      "name": "create-project-and-explicit-task",
+      "status": "PASS"
+    },
+    {
+      "name": "unknown-outcome-never-resends",
+      "status": "PASS"
+    },
+    {
+      "name": "viewer-and-signed-out",
+      "status": "PASS"
+    },
+    {
+      "name": "revoked-source-detail",
+      "status": "PASS"
+    },
+    {
+      "name": "dialog-focus-and-full-detail",
+      "status": "PASS"
+    },
+    {
+      "name": "search-and-empty-filter",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile-navigation-and-fullscreen-detail",
+      "status": "PASS"
+    },
+    {
+      "name": "narrow-reflow-and-reduced-motion",
+      "status": "PASS"
+    },
+    {
+      "name": "cross-project-and-invalid-deeplink",
+      "status": "PASS"
+    }
+  ],
+  "standaloneSha256": "bc9a8c0281a486d2a51390ee70b7e8946d8bd43c9d3e6830011e8470a8dbdfc2"
+}
