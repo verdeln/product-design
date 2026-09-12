@@ -95,7 +95,7 @@ with sync_playwright() as p:
         page.get_by_role('dialog').get_by_role('button',name='Remove references',exact=True).click()
         expect(page.locator('[data-select]')).to_have_count(1)
         path(page,'/resources')
-        expect(page.locator('.selectable-row')).to_have_count(5)
+        expect(page.locator('.selectable-row')).to_have_count(9)
     run('range-selection-removes-links-only',multi)
     def publish(page):
         page.locator('.attention-row').first.click()
@@ -164,7 +164,7 @@ with sync_playwright() as p:
     run('revoked-source-detail',revoked)
     def focus(page):
         path(page,'/projects/editor/sources')
-        row=page.locator('a[data-drag-source="rfc"]'); opener=row.get_attribute('id');row.click()
+        row=page.locator('a[data-drag-source="rfc"]'); opener=row.get_attribute('id');row.click();expect(page.get_by_role('dialog')).to_be_visible()
         for _ in range(14):
             page.keyboard.press('Tab')
             assert page.evaluate('document.getElementById("overlay").contains(document.activeElement)')

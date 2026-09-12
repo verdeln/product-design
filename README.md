@@ -1,14 +1,12 @@
-# Verdeln Product Design
+# Verdeln Product Design — v0.2
 
-Private, non-production interface explorations for Verdeln.
+Private, non-production interface studies. Synthetic data only; no live accounts, models, provider messages, billing or production permissions.
 
-The Project Workspace architecture and UI/UX specifications remain in `verdeln/docs`; this repository does not replace application/domain authorities or connect to production services.
+[中文](README.zh-CN.md) · [Coverage and production handoff](docs/HANDOFF.md) · [Test evidence](tests/evidence.json)
 
-[中文说明](README.zh-CN.md) · [Coverage and handoff](docs/HANDOFF.md) · [Test evidence](tests/evidence.json)
+## Run
 
-## Run the interactive study
-
-Requires Node.js 22+ and npm. There are **no runtime dependencies**, remote fonts, CDN assets, model calls or connected accounts.
+Node.js 22+:
 
 ```sh
 npm ci
@@ -16,49 +14,44 @@ npm run build
 npm run preview
 ```
 
-Open the address printed by the preview server. Alternatively, open the generated **`dist/standalone.html`** directly: it contains the entire application and its styles. Hash routes work without server rewrites. Browser storage is optional; denied/unavailable storage falls back to memory with a warning. Export sample work before closing in that mode. Never enter secrets or real confidential data into the study.
+Open the local address printed by the server. `dist/standalone.html` is a self-contained build with no runtime dependencies, CDN assets or remote fonts. Direct file opening is browser-policy dependent and was blocked by the authoring environment; the server path is the recommended starting point. `npm run dev` rebuilds and serves, without hot reload.
 
-`npm run dev` rebuilds and starts the same server; it is not a hot-reload watcher. Rebuild after editing source. `npm test` builds, typechecks, and runs the 36 model/router/storage tests.
+Do not enter real secrets or confidential data. Optional browser storage holds sample state only; denied storage falls back to memory with a warning. Unsaved Page drafts survive route changes in memory but do not promise persistence across reload/sign-out or account isolation.
+
+## The v0.2 integration
+
+The Workspace sidebar now retains **Pinned, Favorites, Private, Shared and Teamspaces**, independently of the active Project/global section. Project navigation moves into the content header, with a mobile section control and full Workspace drawer. Studio / Focus / Console and light/dark remain available.
+
+Favorites supports typed Page and Project references, removal and personal ordering. It never moves or shares content. Canonical Page views show actual location, audience and authorized related Projects. Opening a source's original Page preserves the return path without implicitly assigning an AI context. The same source body is reused across its entry points.
+
+Private-owned pages, individually shared Private pages, and read-only Shared-with-me pages are distinct. Teamspace overview shows its existing Projects and Pages; private nonmember spaces are hidden while closed spaces expose only a restricted shell.
+
+Page creation exposes Save to and an independent optional Project link. Private sources cannot silently join shared Project context. Page moves preview the full sample subtree and audience change; stale content/destination versions invalidate the preview. Project affiliation changes do not move source pages. The sample Page editor is plain text, not the production collaborative editor.
+
+The prior Source/Highlight/Chat/Work/Artifact flows remain interactive: explicit Task acceptance, fixed criteria, context attachments without sends, stale publication review and unknown-effect verification without resend. No schedule or provider is activated by a simulation control.
+
+## Try the integrated flow
+
+Open Private → My working notes. Star the Page; it appears in Favorites without leaving Private. Open Link to project: the team Project is blocked for audience mismatch, while the personal Project can accept a reference. Open Move to…, select a Teamspace and Preview move. The parent and child appear together. Simulate an intervening edit: confirmation is blocked until another preview. After an allowed move, object IDs and Favorites still resolve the same content.
+
+From Project Sources, Open original page shows actual ownership and a return link. From a Teamspace, opening a Project resolves the same object as the global Projects index.
+
+## Tests and boundaries
 
 ```sh
+npm test
 python -m pip install -r tests/requirements.txt
 python -m playwright install chromium
 npm run test:browser
+npm run test:workspace-browser
 ```
 
-The browser harness prefers `CHROMIUM_EXECUTABLE`, then system Chromium, then the Playwright-managed browser. It loads the standalone bytes with `set_content`, without navigating to a server or requesting network resources. `CASE_FILTER` accepts comma-separated case-name substrings for smaller batches.
+Build/typecheck and **56 model tests passed**. Against the final standalone build, **16 baseline + 11 Workspace browser cases passed**. One separate actual-file/reload test was **BLOCKED** by `ERR_BLOCKED_BY_ADMINISTRATOR`, not passed; no attempt was made to bypass that policy. Browser interaction checks use Chromium `set_content` and memory fallback. Real-origin persistence, native platforms, full accessibility, 200% browser zoom, production editor/IME, multiuser sync and real ACL/provider effects remain unverified.
 
-## Three comparable layouts
+The environment used installed TypeScript 5.8.3 and Node 22.16.0. Dependencies are locked, but `npm ci` was not exercised there. See the exact artifact hash and cases in evidence.json. Generated screenshots, safe logs and prebuilt files accompany the downloadable ZIP; dist/artifacts/node_modules are not committed source.
 
-The top bar switches between **A Studio** (balanced panels), **B Focus** (editorial, single-column hierarchy), and **C Console** (compact operational layout). Appearance is independently light/dark. These are unselected layout studies using the same information architecture, data and commands—not three different products or a new production token authority. Palette and type scale reference the existing Verdeln `DESIGN.md`.
+## Source of truth
 
-## What is interactive
+[PW-UI-1.1 specification PR #111](https://github.com/verdeln/docs/pull/111) defines the production intent. This repository's original [PR #1](https://github.com/verdeln/product-design/pull/1) continues on `verde/project-workspace-prototype`, targeting main. No production design direction has been selected or application repository modified.
 
-- Home, Library, Projects, global AI and Settings; all seven Project sections; context switching, search, mobile section navigation, route-backed detail/peek and focus return.
-- Source filtering, selection/range selection, drag-to-Chat attachments, explicit linking/indexing simulations, Highlights with exact source revision, annotation editing and safe reference removal.
-- Typed human work versus AI task, explicit task acceptance, fixed criteria, input requests, cancellation and follow-up. Scripted Chat never silently creates a task or runs a model.
-- Immutable sample artifact revisions, review before publication, stale-target rejection, refresh/review, exact-operation receipt, and updates across Overview/Work/Outputs/Activity.
-- Explicit unknown-delivery fixture with verification rather than resend; empty/archived Projects, revoked sources, viewer/offline/signed-out simulations.
-- JSON project export, Markdown artifact export, light/dark, reduced motion, collapsed sidebar and responsive mobile details.
-
-Use **Explore states / Prototype controls** to switch scenarios. State mutations are synchronous pure commands over synthetic fixtures. “Simulate” buttons are intentionally explicit. No external tasks, schedules, uploads, messages or billing are created.
-
-## Implementation
-
-Strict TypeScript, semantic HTML, CSS variables and native dialogs. `model.ts` owns synthetic transitions; `router.ts` parses bounded hash routes; `storage.ts` validates optional local persistence; `views.ts` composes escaped markup; `app.ts` wires input/navigation; `ui.ts` supplies small presentation helpers. A minimal local-module bundler emits an offline artifact.
-
-This is **not a React/TanStack production integration**, a collaborative block editor, a security boundary or a replacement for the backend. Production adoption should port the approved layout/components to the existing React shell and consume its real typed ports, receipts and authorization. No workflow is made production-safe by passing the simulator tests.
-
-## Verification performed
-
-TypeScript build and **36/36 model tests** passed. **16/16 Chromium scenarios** passed in four disjoint batches against the same build. See `tests/evidence.json` for names and scope. Browser checks cover 1440px desktop, 720px reflow and 390px mobile, modal focus, stale publication, context drag/drop and shared-state behavior. They are not a WCAG audit, real-origin persistence test, native iOS/Android/Electron test or live-provider verification.
-
-The authoring environment used its installed TypeScript 5.8.3; network package installation was unavailable. The lockfile pins that exact package, but `npm ci` itself was not exercised there. Screenshots and a prebuilt standalone file accompany the release ZIP; `dist/` and local artifacts are generated, not committed source.
-
-## Design references and contribution
-
-- [PW-UI-1.0 at the merged documentation baseline](https://github.com/verdeln/docs/tree/98ab75abcc63ac127f64a8e534e1f02499cbaaa4/shared/architecture/project-workspace/ui)
-- [PW-1.0 architecture](https://github.com/verdeln/docs/tree/98ab75abcc63ac127f64a8e534e1f02499cbaaa4/shared/architecture/project-workspace)
-- [Existing client design system](https://github.com/verdeln/verdeln/blob/4b8d00fa801611eca66ed0aa46986085fb123766/DESIGN.md)
-
-Use `verde/*` branches and PRs to `main`. Do not add real credentials/customer data or silently replace the canonical architecture. No visual direction has been approved for production by this repository change.
+Strict TypeScript and native DOM are used for this study. Port approved composition into the existing React/TanStack shell and real domain ports; do not copy the simulator as a backend, authorization layer or second document authority. Production PW/WNI gates remain NOT_RUN.

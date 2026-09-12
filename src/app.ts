@@ -1,17 +1,20 @@
-import { seed, apply, inject, makeId, writeBlock, type Command, type Mode, type Direction } from './model.js';
+import { seed, apply, inject, makeId, writeBlock, type Command, type Mode, type Direction } from './workspace-model.js';
 import { parseRoute, basePath, detailPath, projectPath, navigate } from './router.js';
-import { mainView, modalView, detailView, nav, label, type UI } from './views.js';
+import { mainView, modalView, detailView, label, type UI } from './views.js';
 import { h, icon, button, download } from './ui.js';
+import { upgrade, document as readDocument, previewMove, projectBasis, projectSpace, isFavorite, canReadProject, type Favorite } from './workspace-model.js';
+import { nav, pagePath, pageHeader, workspaceMain, workspaceModal, sourceHomeLink, initialWorkspaceUI } from './workspace-views.js';
 import { load, save } from './storage.js';
 const root = document.getElementById('app');
 if (!root) throw new Error('Missing application mount');
 const app = root;
-const loaded = load(); let state = loaded.state;
+const loaded = load(); let state = upgrade(loaded.state);
+const workspaceUI = initialWorkspaceUI();
 let route = parseRoute(location.hash), lastBase = basePath(route), returnFocus = '', lastSelected = '';
 const ui: UI = { modal: null, search: '', query: '', filter: 'Active', grid: false, selected: new Set(), attachments: [], draft: '', collapsed: false, notice: loaded.notice, review: null, revision: null, settingsTab: 'Appearance' };
 if (!location.hash) { history.replaceState(null, '', '#/projects/editor/overview'); route = parseRoute(location.hash); lastBase = basePath(route); }
 function persist(): void { if (!save(state)) ui.notice = 'Storage is full or unavailable. Changes remain in memory. Export before closing.'; }
-function currentProject() { return state.projects.find(p => p.id === route.project); }
+function currentProject() { return state.projects.find(p => p.id === route.project && canReadProject(state,p.id)); }
 function close(): void {
   if (ui.modal) { ui.modal = null; render(); }
   else { navigate(basePath(route)); }
@@ -22,28 +25,32 @@ function commit(command: Command): boolean {
   return false;
 }
 function render(): void {
+  const sidebarScroll = app.querySelector('[data-workspace-scroll]')?.scrollTop ?? 0;
   const active = document.activeElement; const focusId = active?.id ?? '';
   const selection: [number | null, number | null] | null = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement ? [active.selectionStart, active.selectionEnd] : null;
   const p = state.mode === 'signed-out' ? undefined : currentProject();
   document.documentElement.dataset.theme = state.dark ? 'dark' : 'light';
   document.documentElement.dataset.direction = state.direction;
   document.documentElement.style.colorScheme = state.dark ? 'dark' : 'light';
-  const title = state.mode === 'signed-out' ? 'Your workspace stays private.' : route.invalid ? 'View unavailable' : p ? route.section === 'overview' ? p.title : label(route.section) : ({ home: 'Your work, in one place.', projects: 'Projects', resources: 'Your Library', chat: 'A little context goes a long way.' })[route.area];
+  const workspaceTitle = route.area==='pages' ? readDocument(state,route.resource??'')?.title ?? (route.resource==='trash'?'Trash':'Page unavailable') : route.area==='teamspaces' ? state.navigation.spaces.find(t=>t.id===route.resource&&(t.access!=='private'||t.member))?.title ?? 'Teamspace unavailable' : null;
+  const title = state.mode === 'signed-out' ? 'Your workspace stays private.' : route.invalid ? 'View unavailable' : workspaceTitle ?? (p ? route.section === 'overview' ? p.title : label(route.section) : ({ home: 'Your work, in one place.', projects: 'Projects', resources: 'Your Library', chat: 'A little context goes a long way.' })[route.area as 'home'|'projects'|'resources'|'chat']);
   document.title = `${title} · Verdeln prototype`;
-  const subtitle = p ? ({ overview: 'Shared context. Clear decisions. Useful outcomes.', chat: 'Explore ideas. Accept work deliberately.', sources: 'The material behind your decisions.', highlights: 'The passages worth keeping close.', work: 'Know what is moving, and what needs you.', outputs: 'Useful work, ready to inspect and build on.', activity: 'A traceable account of what changed.' })[route.section] : ({ home: 'A quieter way to keep meaningful work moving.', projects: 'From a first question to something worth sharing.', resources: 'Reusable material, without making extra copies.', chat: 'A scripted conversation preview. No model is connected.' })[route.area];
+  const subtitle = workspaceTitle ? (route.area==='pages'?'A page belongs here. Projects and Favorites reference it.':'Team-owned content and goal-based projects, together.') : p ? ({ overview: 'Shared context. Clear decisions. Useful outcomes.', chat: 'Explore ideas. Accept work deliberately.', sources: 'The material behind your decisions.', highlights: 'The passages worth keeping close.', work: 'Know what is moving, and what needs you.', outputs: 'Useful work, ready to inspect and build on.', activity: 'A traceable account of what changed.' })[route.section] : ({ home: 'A quieter way to keep meaningful work moving.', projects: 'From a first question to something worth sharing.', resources: 'Reusable material, without making extra copies.', chat: 'A scripted conversation preview. No model is connected.' })[route.area as 'home'|'projects'|'resources'|'chat'];
   const topAction = p ? route.section === 'sources' ? button('Add source', 'add-source', { icon: 'plus', primary: true }) : route.section === 'work' ? button('Add work', 'new-task', { icon: 'plus', primary: true }) : route.section === 'outputs' ? button('Export project', 'export-project', { icon: 'download' }) : `<a class="btn primary" href="#${projectPath(p.id, 'chat')}">${icon('spark', 16)}Ask coordinator</a>` : route.area === 'projects' || route.area === 'home' ? button('New project', 'new-project', { icon: 'plus', primary: true }) : '';
-  const showDetail = route.kind && route.item && !route.full && !ui.modal && state.mode !== 'signed-out';
+  const showDetail = (!route.project || canReadProject(state,route.project)) && route.kind && route.item && !route.full && !ui.modal && state.mode !== 'signed-out';
   let overlay = '';
   if (ui.modal) {
-    const modal = ui.modal === 'project-actions' ? { title: 'Project actions', body: `<div class="action-stack">${button('Export project data', 'export-project', { icon: 'download' })}${button(p?.archived ? 'Restore project' : 'Archive project', 'archive', { icon: 'projects' })}${button('Workspace settings', 'settings', { icon: 'settings' })}</div><p class="note">Project references do not own or delete source content.</p>` } : modalView(state, route, ui);
+    const modal = workspaceModal(state,route,workspaceUI,ui.modal) ?? (ui.modal==='nav' ? {title:'Workspace navigation',body:nav(state,route,ui,true)} : ui.modal === 'project-actions' ? { title: 'Project actions', body: `<div class="action-stack">${button('Export project data', 'export-project', { icon: 'download' })}${button(p?.archived ? 'Restore project' : 'Archive project', 'archive', { icon: 'projects' })}${button('Workspace settings', 'settings', { icon: 'settings' })}</div><p class="note">Project references do not own or delete source content.</p>` } : modalView(state, route, ui));
+    if (ui.modal==='add-source' && p) modal.body += '<hr><button type="button" class="btn" data-ws-action="new-page" data-project="'+h(p.id)+'">Create a page and choose its location</button>';
     overlay = `<dialog id="overlay" class="modal ${ui.modal === 'publish' ? 'review-modal' : ''} ${ui.modal === 'nav' ? 'nav-modal' : ''}" aria-labelledby="modal-title"><header><h2 id="modal-title">${h(modal.title)}</h2>${button('', 'close', { icon: 'close', extra: 'aria-label="Close dialog"' })}</header><div class="modal-body">${ui.notice ? `<div class="modal-inline" role="status">${h(ui.notice)}</div>` : ''}${modal.body}</div></dialog>`;
-  } else if (showDetail) overlay = `<dialog id="overlay" class="peek" aria-label="Object detail"><header><span class="eyebrow">INSPECT ${h(route.kind ?? '')}</span><div><a class="icon-btn" aria-label="Open full page" href="#${detailPath(route, route.kind!, route.item!, true)}">${icon('expand')}</a>${button('', 'close', { icon: 'close', extra: 'aria-label="Close detail"' })}</div></header><div class="detail-body">${detailView(state, route, ui)}</div></dialog>`;
-  app.innerHTML = `<a href="#main-content" class="skip-link" id="skip-link">Skip to content</a><div class="app-shell ${ui.collapsed ? 'collapsed' : ''}"><aside class="sidebar">${nav(state, route, ui)}</aside><div class="workspace"><header class="topbar"><div class="breadcrumb">${button('', 'nav', { icon: 'menu', extra: 'aria-label="Open sections" data-mobile-nav' })}<span>Workspace</span>${icon('chevron', 13)}<strong>${p ? h(p.title) : label(route.area)}</strong></div><div class="top-actions"><span class="prototype-tag">PROTOTYPE</span><div class="direction-switch" role="group" aria-label="Layout direction">${(['studio', 'focus', 'console'] as const).map((direction, i) => `<button data-action="direction:${direction}" aria-label="${['A', 'B', 'C'][i]} ${label(direction)} layout" aria-pressed="${state.direction === direction}" class="${state.direction === direction ? 'selected' : ''}">${['A', 'B', 'C'][i]}<span> ${label(direction)}</span></button>`).join('')}</div>${button('', 'search', { icon: 'search', extra: 'aria-label="Search workspace" title="Search · ⌘K"' })}${button('', 'theme', { icon: state.dark ? 'sun' : 'moon', extra: 'aria-label="Toggle appearance"' })}</div></header><div class="prototype-note">Interactive design study <span>·</span> Synthetic data, no live agents or external actions <button data-action="scenarios">Explore states ${icon('arrow', 12)}</button></div><main id="main-content" tabindex="-1"><div class="page-heading"><div><div class="eyebrow">${p ? 'PROJECT WORKSPACE' : 'YOUR WORKSPACE'}${p?.archived ? ' · ARCHIVED' : ''}</div><h1>${h(title)}</h1><p>${h(subtitle)}</p></div><div class="heading-actions">${state.mode !== 'signed-out' ? topAction : ''}${p ? button('', 'project-actions', { icon: 'more', extra: 'aria-label="Project actions"' }) : ''}</div></div>${writeBlock(state, p) && state.mode !== 'signed-out' ? `<div class="environment-banner" role="status">${icon('lock', 17)}<span>${h(writeBlock(state, p))}</span>${button(state.mode !== 'ready' ? 'Return to ready demo' : 'Restore', state.mode !== 'ready' ? 'mode:ready' : 'confirm-archive')}</div>` : ''}<div class="page-content">${mainView(state, route, ui)}</div><footer class="page-footer"><span>Verdeln / Project Workspace</span><span>${label(state.direction)} study · Sample state only</span></footer></main></div></div><nav class="mobile-bottom" aria-label="Mobile primary">${[['home', '/', 'Home'], ['resources', '/resources', 'Library'], ['projects', '/projects', 'Projects'], ['chat', '/chat', 'AI']].filter(([key]) => state.mode !== 'signed-out' || key === 'home' || key === 'chat').map(([key, path, text]) => `<a href="#${path}" ${route.area === key ? 'aria-current="page"' : ''}>${icon(key === 'chat' ? 'spark' : key ?? '')}<span>${text}</span></a>`).join('')}</nav>${overlay}${ui.notice ? `<div class="toast" role="status"><span>${h(ui.notice)}</span>${button('', 'dismiss-notice', { icon: 'close', extra: 'aria-label="Dismiss message"' })}</div>` : ''}`;
+  } else if (showDetail) overlay = `<dialog id="overlay" class="peek" aria-label="Object detail"><header><span class="eyebrow">INSPECT ${h(route.kind ?? '')}</span><div><a class="icon-btn" aria-label="Open full page" href="#${detailPath(route, route.kind!, route.item!, true)}">${icon('expand')}</a>${button('', 'close', { icon: 'close', extra: 'aria-label="Close detail"' })}</div></header><div class="detail-body">${sourceHomeLink(state,route)}${detailView(state, route, ui)}</div></dialog>`;
+  app.innerHTML = `<a href="#main-content" class="skip-link" id="skip-link">Skip to content</a><div class="app-shell ${ui.collapsed ? 'collapsed' : ''}"><aside class="sidebar">${nav(state, route, ui)}</aside><div class="workspace"><header class="topbar"><div class="breadcrumb">${button('', 'nav', { icon: 'menu', extra: 'aria-label="Open sections" data-mobile-nav' })}<span>Workspace</span>${icon('chevron', 13)}<strong>${p ? h(p.title) : label(route.area)}</strong></div><div class="top-actions"><span class="prototype-tag">PROTOTYPE</span><div class="direction-switch" role="group" aria-label="Layout direction">${(['studio', 'focus', 'console'] as const).map((direction, i) => `<button data-action="direction:${direction}" aria-label="${['A', 'B', 'C'][i]} ${label(direction)} layout" aria-pressed="${state.direction === direction}" class="${state.direction === direction ? 'selected' : ''}">${['A', 'B', 'C'][i]}<span> ${label(direction)}</span></button>`).join('')}</div>${button('', 'search', { icon: 'search', extra: 'aria-label="Search workspace" title="Search · ⌘K"' })}${button('', 'theme', { icon: state.dark ? 'sun' : 'moon', extra: 'aria-label="Toggle appearance"' })}</div></header><div class="prototype-note">Interactive design study <span>·</span> Synthetic data, no live agents or external actions <button data-action="scenarios">Explore states ${icon('arrow', 12)}</button></div><main id="main-content" tabindex="-1"><div class="page-heading"><div><div class="eyebrow">${p ? 'PROJECT WORKSPACE' : 'YOUR WORKSPACE'}${p?.archived ? ' · ARCHIVED' : ''}</div><h1>${h(title)}</h1><p>${h(subtitle)}</p></div><div class="heading-actions">${state.mode !== 'signed-out' ? topAction : ''}${p ? button('', 'project-actions', { icon: 'more', extra: 'aria-label="Project actions"' }) : ''}</div></div>${writeBlock(state, p) && state.mode !== 'signed-out' ? `<div class="environment-banner" role="status">${icon('lock', 17)}<span>${h(writeBlock(state, p))}</span>${button(state.mode !== 'ready' ? 'Return to ready demo' : 'Restore', state.mode !== 'ready' ? 'mode:ready' : 'confirm-archive')}</div>` : ''}<div class="page-content">${pageHeader(state,route)}${workspaceMain(state,route,workspaceUI) ?? mainView(state, route, ui)}</div><footer class="page-footer"><span>Verdeln / Project Workspace</span><span>${label(state.direction)} study · Sample state only</span></footer></main></div></div><nav class="mobile-bottom" aria-label="Mobile primary">${[['home', '/', 'Home'], ['resources', '/resources', 'Library'], ['projects', '/projects', 'Projects'], ['chat', '/chat', 'AI']].filter(([key]) => state.mode !== 'signed-out' || key === 'home' || key === 'chat').map(([key, path, text]) => `<a href="#${path}" ${route.area === key ? 'aria-current="page"' : ''}>${icon(key === 'chat' ? 'spark' : key ?? '')}<span>${text}</span></a>`).join('')}</nav>${overlay}${ui.notice ? `<div class="toast" role="status"><span>${h(ui.notice)}</span>${button('', 'dismiss-notice', { icon: 'close', extra: 'aria-label="Dismiss message"' })}</div>` : ''}`;
   // Stable control IDs survive a view projection refresh and restore modal opener focus.
+  const scroll = app.querySelector('[data-workspace-scroll]'); if (scroll) scroll.scrollTop = sidebarScroll;
   const keyCounts = new Map<string, number>();
-  app.querySelectorAll<HTMLElement>('a[href],button[data-action],input[name],textarea[name],select[name]').forEach(el => {
+  app.querySelectorAll<HTMLElement>('a[href],button[data-action],button[data-ws-action],button[data-ws-toggle],input[name],textarea[name],select[name]').forEach(el => {
     if (el.id) return;
-    const key = `${el.tagName}:${el.getAttribute('href') ?? el.dataset.action ?? el.getAttribute('name')}:${el.closest('form')?.dataset.form ?? ''}`;
+    const key = `${el.tagName}:${el.getAttribute('href') ?? el.dataset.action ?? (el.dataset.wsAction||el.dataset.wsToggle ? `${el.dataset.wsAction??el.dataset.wsToggle}:${el.dataset.id??''}:${el.dataset.kind??''}:${el.dataset.offset??''}` : el.getAttribute('name'))}:${el.closest('form')?.dataset.form ?? ''}`;
     const n = keyCounts.get(key) ?? 0; keyCounts.set(key, n + 1);
     let hash = 2166136261; for (const char of key) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
     el.id = `control-${(hash >>> 0).toString(36)}-${n}`;
@@ -77,6 +84,7 @@ function setReview(id: string): void {
 }
 app.addEventListener('click', event => {
   if (!(event.target instanceof Element)) return;
+  if (handleWorkspaceClick(event.target)) return;
   if (event.target instanceof HTMLInputElement && event.target.dataset.select) {
     const checkbox = event.target; const id = checkbox.dataset.select!; const checked = checkbox.checked;
     event.preventDefault();
@@ -102,7 +110,7 @@ app.addEventListener('click', event => {
   if (action === 'grid') ui.grid = !ui.grid;
   if (action === 'dismiss-notice') ui.notice = '';
   if (action === 'reset-confirm') ui.modal = 'reset';
-  if (action === 'reset') { const { direction, dark } = state; state = seed(); state.direction = direction; state.dark = dark; ui.modal = null; ui.selected.clear(); ui.attachments = []; ui.notice = 'Sample data reset. No real project data was changed.'; persist(); navigate(projectPath('editor')); }
+  if (action === 'reset') { const { direction, dark } = state; state = seed(); workspaceUI.edits = {}; workspaceUI.move = null; state.direction = direction; state.dark = dark; ui.modal = null; ui.selected.clear(); ui.attachments = []; ui.notice = 'Sample data reset. No real project data was changed.'; persist(); navigate(projectPath('editor')); }
   if (action === 'dry-run') ui.notice = 'Dry run: prepare one draft from selected sources; wait for human review before publication. No task was started.';
   if (action === 'inject' && p && ['revoke', 'destination', 'unknown'].includes(id)) { state = inject(state, id as 'revoke' | 'destination' | 'unknown', p.id); persist(); ui.notice = `Injected ${id} scenario · sample data only`; if (ui.modal === 'scenarios') ui.modal = null; }
   if (action === 'attach' && p) { const source = state.sources.find(s => s.id === id); if (!source?.available || !p.sources.includes(id)) ui.notice = 'That context is not available.'; else { if (!ui.attachments.includes(id)) ui.attachments.push(id); ui.modal = null; ui.notice = 'Context attached, not sent or indexed.'; navigate(projectPath(p.id, 'chat')); } }
@@ -126,6 +134,7 @@ app.addEventListener('click', event => {
 });
 app.addEventListener('input', event => {
   const target = event.target; if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+  if (target.dataset.wsDraft && workspaceUI.edits[target.dataset.wsDraft]) workspaceUI.edits[target.dataset.wsDraft]!.body = target.value;
   if (target.id === 'view-search') { ui.query = target.value; render(); }
   if (target.id === 'global-search') { ui.search = target.value; render(); }
   if (target.id === 'chat-input') ui.draft = target.value;
@@ -139,6 +148,7 @@ app.addEventListener('change', event => {
 });
 app.addEventListener('submit', event => {
   const form = event.target; if (!(form instanceof HTMLFormElement)) return; event.preventDefault();
+  if (form.dataset.wsForm) { handleWorkspaceForm(form); return; }
   const data = new FormData(form), value = (name: string) => String(data.get(name) ?? ''), p = currentProject();
   if (form.dataset.form === 'new-project') { const result = apply(state, { type: 'create-project', title: value('title'), goal: value('goal') }); ui.notice = result.message; if (result.ok) { state = result.state; persist(); ui.modal = null; navigate(projectPath(result.id)); } }
   if (form.dataset.form === 'new-task' && p) { if (commit({ type: 'create-task', project: p.id, title: value('title'), criteria: value('criteria').split('\n').filter(v => v.trim()), kind: value('kind') === 'human' ? 'human' : 'ai' })) { ui.modal = null; navigate(projectPath(p.id, 'work')); } }
@@ -183,4 +193,93 @@ app.addEventListener('drop', event => {
   if (!ui.attachments.includes(id)) ui.attachments.push(id);
   ui.notice = 'Context attached, not sent or indexed.';
   navigate(projectPath(p.id, 'chat')); render();
+});
+
+function handleWorkspaceClick(element: Element): boolean {
+  const toggle = element.closest<HTMLElement>('[data-ws-toggle]');
+  const target = element.closest<HTMLElement>('[data-ws-action]');
+  if (!toggle && !target) return false;
+  if (target instanceof HTMLButtonElement && target.disabled) return true;
+  const action = target?.dataset.wsAction ?? 'expand', id = toggle?.dataset.wsToggle ?? target?.dataset.id ?? '';
+  if (action === 'expand') {
+    const at = state.navigation.expanded.indexOf(id);
+    if (at < 0) state.navigation.expanded.push(id); else state.navigation.expanded.splice(at, 1);
+    persist(); render(); return true;
+  }
+  if (action === 'favorite' || action === 'reorder') {
+    const ref: Favorite = { kind: target?.dataset.kind === 'project' ? 'project' : 'page', id };
+    commit(action === 'favorite' ? { type: 'favorite', ref } : { type: 'reorder-favorite', ref, offset: target?.dataset.offset === '-1' ? -1 : 1 });
+  }
+  if (action === 'new-page') {
+    workspaceUI.project = target?.dataset.project ?? null;
+    workspaceUI.parent = target?.dataset.parent ?? null;
+    workspaceUI.destination = target?.dataset.space || (workspaceUI.project ? projectSpace(state, workspaceUI.project) : null);
+    openModal('ws-create'); return true;
+  }
+  if (action === 'edit-page') {
+    const d = readDocument(state, id);
+    if (d && !workspaceUI.edits[id]) workspaceUI.edits[id] = { body: d.body, revision: d.revision };
+  }
+  if (action === 'discard-edit') delete workspaceUI.edits[id];
+  if (action === 'move-page') {
+    workspaceUI.page = id; workspaceUI.move = null;
+    workspaceUI.destination = readDocument(state,id)?.entry.space ?? null;
+    openModal('ws-move'); return true;
+  }
+  if (action === 'share-page' || action === 'link-page') {
+    workspaceUI.page = id; openModal(action === 'share-page' ? 'ws-share' : 'ws-link'); return true;
+  }
+  if (action === 'confirm-share') {
+    if (commit({ type: 'share-page', page: id, shared: target?.dataset.shared === 'true', expected: Number(target?.dataset.revision) })) ui.modal = null;
+  }
+  if (action === 'confirm-link') {
+    const d = readDocument(state,workspaceUI.page);
+    if (d?.entry.ref.kind === 'source' && commit({ type: 'link-source', project: id, source: d.entry.ref.id })) ui.modal = null;
+  }
+  if (action === 'confirm-move' && workspaceUI.move) {
+    if (commit({ type: 'move-page', preview: workspaceUI.move })) { ui.modal = null; workspaceUI.move = null; }
+  }
+  if (action === 'stale-move') {
+    const d = readDocument(state,workspaceUI.page);
+    if (d) commit({ type: 'save-page', page: d.entry.id, body: d.body+'\n\nAn intervening edit changed this move basis.', expected: d.revision });
+  }
+  if (action === 'assign-project') {
+    workspaceUI.assignmentBasis = projectBasis(state,id); openModal('ws-assign'); return true;
+  }
+  render(); return true;
+}
+function handleWorkspaceForm(form: HTMLFormElement): void {
+  const data = new FormData(form), value = (name:string) => String(data.get(name) ?? '');
+  if (form.dataset.wsForm === 'create-page') {
+    const result = apply(state,{ type:'create-page', title:value('title'), space:value('space') || null, parent:workspaceUI.parent, project:data.has('link') ? workspaceUI.project : null });
+    ui.notice=result.message;
+    if(result.ok){state=result.state;persist();ui.modal=null;navigate(pagePath(result.id,workspaceUI.project));}
+  }
+  if(form.dataset.wsForm==='save-page') {
+    const id=value('page'),edit=workspaceUI.edits[id];
+    if(edit&&commit({type:'save-page',page:id,body:value('body'),expected:edit.revision})) delete workspaceUI.edits[id];
+  }
+  if(form.dataset.wsForm==='preview-move') {
+    workspaceUI.destination=value('target')||null;
+    workspaceUI.move=previewMove(state,workspaceUI.page,workspaceUI.destination);
+    if(!workspaceUI.move)ui.notice='The page subtree or destination is unavailable.';
+  }
+  if(form.dataset.wsForm==='assign-project'&&route.project) {
+    if(commit({type:'assign-project',project:route.project,target:value('target')||null,expected:workspaceUI.assignmentBasis}))ui.modal=null;
+  }
+  render();
+}
+app.addEventListener('dragstart',event=>{
+  const el=event.target instanceof Element?event.target.closest<HTMLElement>('[data-ws-page]'):null;
+  if(!el?.dataset.wsPage||!event.dataTransfer||!readDocument(state,el.dataset.wsPage))return;
+  event.dataTransfer.setData('application/x-verdeln-page',el.dataset.wsPage);event.dataTransfer.effectAllowed='copy';
+});
+app.addEventListener('dragover',event=>{
+  if(event.target instanceof Element&&event.target.closest('[data-ws-drop="favorites"]')&&event.dataTransfer?.types.includes('application/x-verdeln-page'))event.preventDefault();
+});
+app.addEventListener('drop',event=>{
+  if(!(event.target instanceof Element)||!event.target.closest('[data-ws-drop="favorites"]'))return;
+  const id=event.dataTransfer?.getData('application/x-verdeln-page');if(!id)return;event.preventDefault();
+  if(!isFavorite(state,{kind:'page',id}))commit({type:'favorite',ref:{kind:'page',id}});
+  render();
 });

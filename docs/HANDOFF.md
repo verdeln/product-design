@@ -1,46 +1,27 @@
-# Prototype scope and production handoff
+# v0.2 scope and production handoff
 
-The design source remains PW-1.0/PW-UI-1.0 in `verdeln/docs`. This study exercises one coherent synthetic state graph, not a second application authority.
+Canonical intent: PW-1.0 and PW-UI-1.1 in verdeln/docs, including PR #111 and chapter 11. This repository is synthetic and must never become an alternative domain or security authority.
 
 ## Ownership
 
-| File | Responsibility | Not responsible for |
-| --- | --- | --- |
-| `src/model.ts` | Pure fixture commands, guards, exact revision/receipt simulation, derived attention | Production policy, identity, persistence, scheduling or billing |
-| `src/router.ts` | Closed hash-route parsing and detail navigation | Server routing or authorization |
-| `src/storage.ts` | Bounded validation of optional local saved samples | Account security or cloud sync |
-| `src/ui.ts` | Escaping, icons, buttons, state labels, safe tiny Markdown rendering | Domain transitions |
-| `src/views.ts` | All screen/peek/dialog markup from typed state | Independent status stores or business authority |
-| `src/app.ts` | Event delegation, keyboard/focus, uploads-free context DnD, URL state and local export | Real agent or provider I/O |
-| `src/styles.css`, `surfaces.css`, `overlays.css`, `layouts.css` | Shared semantic variables, responsive layouts, light/dark and reduced motion | Replacing `@verdeln/ui` in production |
+`model.ts` retains the original Task/action/artifact/source/page fixture semantics. `workspace-model.ts` composes them with typed navigation references, page location/access metadata, Teamspaces, Favorites and separate navigation commands. It does not store a second body or Task lifecycle. `workspace-views.ts` renders the stable tree, Project-local sections, canonical Page/Teamspace screens and explicit move/share/link/create dialogs. `app.ts` selects the new composition and handles input. The old unused navigation helper in views.ts is not the active sidebar. router.ts adds fixture Page/Teamspace routes. workspace.css extends the existing prototype aliases; it is not a new production token system.
 
-## Covered surfaces
+## Implemented interactions
 
-Home, Library, Projects index/create/archive/restore, global AI, Settings, Project Overview, Chat, Sources, Highlights, Work, Outputs and Activity have navigable content. Core object details can open as a route-backed peek or full detail. Settings intentionally describes disconnected providers: no OAuth/token or live integration is implemented. Automation control changes a fixture Boolean and dry-run message, not a background schedule.
+Stable Workspace content groups across all existing routes; typed personal Page/Project Favorites and ordering; Page trees and explicit-share markers; restricted Shared-with-me; Teamspace Projects/Pages views with the same identities; canonical source/Page opening with actual location and safe return/backlinks; plain-text editing and per-Page in-memory draft preservation; explicit create destination/optional source link; private-source/shared-project compatibility checks; complete sample subtree move preview, stale rejection and ID preservation; separate Project affiliation changes. Original task, source, artifact review and unknown-effect workflows remain.
 
-One source can belong to several Projects. Each Project has its own observed source revision; reviewing a newer source in one Project does not rewrite another Project's basis. Removing a link does not delete source content. Revoked content is redacted in prototype UI, but fixture data still exists locally: this is not a security guarantee.
+## Deliberate limitations
 
-AI task acceptance preserves its criteria. Sample evidence only satisfies the named sample scenarios; creating arbitrary criteria does not let a timer/model-text claim them proved. Human-work checkboxes are explicit user simulation. Publication binds the artifact revision, destination version and semantic request identity; identical retry reuses its receipt. A changed target requires review. The simulator replaces its sample Page body after review; production must instead call the real governed typed mutation path.
+All guards operate on locally available synthetic data. Real ACL, multi-account isolation, server revocation, complete derived-data disclosure, attachment access, collaboration, resource governance and side effects are not implemented. Source compatibility for Project affiliation is not a complete production review: decisions, conversations, artifacts, automation principals and active runs also need real checks. Page sharing uses one fictional reader; no actual member invitations. Teamspace creation/settings and real Trash deletion remain unimplemented. The plain-text Page editor does not test block selection, IME or CRDT semantics.
 
-Unknown external delivery has its own fixture identity. Cancellation waits for resolution; verification changes fixture observation only. There is no send endpoint, network call or resend implementation. Closing a dialog is not task cancellation or effect resolution.
+The prototype uses synchronous mock state updates and rerenders markup. Production must keep the stable shell mounted, consume authorized lightweight observations, preserve native editor state, and reconcile typed commands through real domain owners. Large-tree virtualization, concurrent Favorites reorder, versioned preference synchronization and actual subtree/attachment policy enforcement remain production work. No Page/Task storage migration is justified merely by changing navigation.
 
-## Visual alternatives
+## Verification
 
-A Studio is the baseline recommendation for a balanced project workspace. B Focus changes composition to single-column editorial hierarchy, keeping all actions accessible. C Console changes density, grid proportions and chrome rather than domain semantics. Light/dark is orthogonal to all three. A variant selection is a local UI preference, not approval to change production design tokens.
+Final build: strict TypeScript 5.8.3, Node 22.16.0. Model tests: 56 passed. Chromium 144.0.7559.96: 16 existing plus 11 integration scenarios passed against the final standalone bytes. An independent actual-file/reload-persistence case was blocked by administrator policy before opening the file. Its status is BLOCKED, not PASS; no workaround bypass was attempted. set_content tests exercise in-memory fallback, not real-origin storage. The exact hash and case lists are recorded in tests/evidence.json.
 
-## Testing and limits
-
-`tests/evidence.json` records 36 model tests and 16 browser cases from Chromium 144.0.7559.96, Node 22.16.0 and TypeScript 5.8.3. Browser cases ran in four disjoint batches using `set_content` on the same standalone build. Each case checked uncaught page errors and network requests; none occurred in the passing runs. Screenshots were inspected for the main desktop overview, dark Console, stale review and mobile detail. This is targeted visual inspection, not screenshot-diff or full accessibility certification.
-
-Not verified: real-origin persistence; file:// navigation policy on user browsers; Safari/Firefox; native Electron/iOS/Android; true browser 200% zoom; full screen-reader use; huge-list virtualization; actual editor text selection/IME; live multidevice/multiuser conflicts; full localization; backend permission/receipt/recovery enforcement; provider delivery; hard monetary caps; deployed hosting; Figma variable/component generation. No existing production architecture/UI gate is marked PASS by these fixture tests.
+Visual inspection covered current desktop stable navigation, canonical Page, move review and mobile navigation. Full-page browser screenshots can show a fixed dialog/backdrop over only the initial viewport; curated handoff images use viewport captures for mobile. These are not a full accessibility or visual-diff audit. npm ci, live provider actions, Figma, public deployment, native Electron/iOS/Android, Safari/Firefox and 200% actual browser zoom were not exercised.
 
 ## Production adoption
 
-1. Select a layout based on the actual clickable workflow, not screenshots alone; reconcile its variables to `@verdeln/ui` rather than copying a second palette.
-2. Port shell/section/detail composition into the existing React routes, shared overlay providers and TanStack observation queries.
-3. Replace simulator commands with typed server/native authority ports. Keep unknown, stale, partial and unavailable outcomes explicit. UI permissions are supplied capabilities, not role-string guesses.
-4. Bind artifact review to actual immutable content references, current target bases, approval and canonical publication receipts. Do not copy sample full-body replacement into a live editor.
-5. Preserve real Task/Run/action/event identity and separate human work; map each simulated proof to authoritative evidence or explicit human acceptance.
-6. Run the architecture's real backend, editor, a11y, persistence, mobile and provider gates before shipping. Use this repository's fixtures as interaction cases, not production evidence.
-
-Long-term professional executors, local device tickets, actual schedules, evaluated capability packages and cross-project orchestration remain in the architecture plan. This prototype demonstrates their UI boundaries; it does not implement those systems.
+Map the stable Workspace tree and Project section components onto existing React routes and @verdeln/ui. Extend page-only Favorites to typed references without losing existing IDs/order. Keep Page bodies and Task state in their existing owners. Move/share/link/publish commands require current actor, exact operation basis, disclosure checks and durable receipts. Replace every simulator completion or permission guard with real authority evidence. Preserve the original PW-UI gates and add WNI-01–WNI-16; none becomes a production PASS because this prototype passes.
