@@ -1,0 +1,22 @@
+{
+  "name": "@verdeln/product-design",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Offline-capable Project Workspace interaction prototype; synthetic data only.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "dev": "npm run build && node scripts/serve.mjs",
+    "preview": "node scripts/serve.mjs",
+    "test:browser": "python tests/browser.py",
+    "test:workspace-browser": "python tests/workspace-browser.py"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

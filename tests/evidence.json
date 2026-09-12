@@ -1,0 +1,62 @@
+{
+  "version": "0.2.0",
+  "date": "2026-09-12",
+  "node": "22.16.0",
+  "typescript": "5.8.3",
+  "model": {
+    "passed": 56,
+    "failed": 0
+  },
+  "browser": "Chromium 144.0.7559.96",
+  "method": "Final standalone bytes via set_content; synthetic data and memory fallback, not production authorization or real-origin persistence.",
+  "baselinePassed": 16,
+  "workspacePassed": 11,
+  "browserFailed": 0,
+  "blocked": [
+    {
+      "name": "actual-file-opening-and-reload-persistence",
+      "status": "BLOCKED",
+      "reason": "file:// navigation rejected by administrator policy (ERR_BLOCKED_BY_ADMINISTRATOR). Not counted as passing; policy not bypassed."
+    }
+  ],
+  "baselineCases": [
+    "three-layouts-and-dark",
+    "all-navigation-destinations",
+    "source-to-highlight",
+    "attach-chat-without-implicit-task",
+    "drag-context-without-send",
+    "range-selection-removes-links-only",
+    "stale-review-then-exact-publication",
+    "create-project-and-explicit-task",
+    "unknown-outcome-never-resends",
+    "viewer-and-signed-out",
+    "revoked-source-detail",
+    "dialog-focus-and-full-detail",
+    "search-and-empty-filter",
+    "mobile-navigation-and-fullscreen-detail",
+    "narrow-reflow-and-reduced-motion",
+    "cross-project-and-invalid-deeplink"
+  ],
+  "workspaceCases": [
+    "stable-sidebar-across-seven-destinations",
+    "project-source-to-canonical-page-and-back",
+    "typed-favorites-do-not-own-content",
+    "subtree-visibility-preview-and-stale-revalidation",
+    "private-to-shared-link-is-not-sharing",
+    "private-sharing-and-shared-read-only",
+    "creation-destination-and-optional-link",
+    "teamspace-project-lens-does-not-move-sources",
+    "private-hidden-versus-closed-discoverable",
+    "mobile-stable-drawer-and-project-sections",
+    "unsaved-page-draft-survives-route-switch"
+  ],
+  "standaloneSha256": "5d4b302cfafd75a13f3e8dffef149957420c35e31101283269052dfd73f3e092",
+  "notRun": [
+    "npm ci in this environment",
+    "real-origin persistence",
+    "production React/editor/IME/multiuser/ACL",
+    "native platforms",
+    "full accessibility audit",
+    "Figma/public hosting"
+  ]
+}
