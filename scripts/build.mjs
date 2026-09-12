@@ -22,7 +22,7 @@ const modules = readdirSync(resolve(root, 'src')).filter(f => f.endsWith('.ts'))
 // The prototype has only relative local modules and no runtime dependencies.
 const bundle = `(()=>{'use strict';const modules={${modules.join(',\n')}};const cache={};function require(id){if(cache[id])return cache[id].exports;if(!modules[id])throw new Error('Unknown local module: '+id);const module={exports:{}};cache[id]=module;modules[id](require,module,module.exports);return module.exports;}require('./app.js');})();`;
 writeFileSync(resolve(root, 'dist/app.js'), bundle);
-const css = ['styles.css', 'surfaces.css', 'overlays.css', 'layouts.css', 'workspace.css'].map(file => readFileSync(resolve(root, 'src', file), 'utf8')).join('');
+const css = ['styles.css', 'surfaces.css', 'overlays.css', 'layouts.css', 'workspace.css', 'ai.css'].map(file => readFileSync(resolve(root, 'src', file), 'utf8')).join('');
 writeFileSync(resolve(root, 'dist/styles.css'), css);
 const html = readFileSync(resolve(root, 'index.html'), 'utf8');
 writeFileSync(resolve(root, 'dist/index.html'), html);

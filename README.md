@@ -1,8 +1,8 @@
-# Verdeln Product Design — v0.2
+# Verdeln Product Design — v0.3
 
-Private, non-production interface studies. Synthetic data only; no live accounts, models, provider messages, billing or production permissions.
+Private, synthetic-data interface studies for Verdeln. The canonical production architecture remains in `verdeln/docs`. This repository is not a second domain authority, security implementation, agent service or production React client.
 
-[中文](README.zh-CN.md) · [Coverage and production handoff](docs/HANDOFF.md) · [Test evidence](tests/evidence.json)
+[中文说明](README.zh-CN.md) · [Scope and handoff](docs/HANDOFF.md) · [Recorded test evidence](tests/evidence.json)
 
 ## Run
 
@@ -14,44 +14,50 @@ npm run build
 npm run preview
 ```
 
-Open the local address printed by the server. `dist/standalone.html` is a self-contained build with no runtime dependencies, CDN assets or remote fonts. Direct file opening is browser-policy dependent and was blocked by the authoring environment; the server path is the recommended starting point. `npm run dev` rebuilds and serves, without hot reload.
+The server prints a localhost address. The build also emits `dist/standalone.html`, containing all runtime JavaScript, CSS and icons, with no CDN, remote fonts or runtime dependencies. Direct file opening depends on browser policy; the local preview server is recommended. `npm run dev` builds and serves but is not a hot-reload watcher.
 
-Do not enter real secrets or confidential data. Optional browser storage holds sample state only; denied storage falls back to memory with a warning. Unsaved Page drafts survive route changes in memory but do not promise persistence across reload/sign-out or account isolation.
+Browser storage is optional. Denied/unavailable storage uses a clearly indicated in-memory fallback. Do not enter secrets or real confidential data. The prototype contacts no LLM, provider, MCP endpoint, external repository, scheduler or payment service.
 
-## The v0.2 integration
+## New in v0.3: a connected Workspace AI experience
 
-The Workspace sidebar now retains **Pinned, Favorites, Private, Shared and Teamspaces**, independently of the active Project/global section. Project navigation moves into the content header, with a mobile section control and full Workspace drawer. Studio / Focus / Console and light/dark remain available.
+The stable Workspace sidebar retains Favorites, Private, Shared and Teamspaces. The AI destination now contains grouped local navigation for Conversations, Assistants, Tasks, Automations, Coordination, Skills, Capability packages, Connections & MCP, and Workspace context. These are views of shared synthetic identities, not independent copies of work.
 
-Favorites supports typed Page and Project references, removal and personal ordering. It never moves or shares content. Canonical Page views show actual location, audience and authorized related Projects. Opening a source's original Page preserves the return path without implicitly assigning an AI context. The same source body is reused across its entry points.
+- **Workspace discovery:** inspect authorized sample Pages, native Collection schema/rows, sources, opt-in conversation/activity history, exact read references and omissions. Project sources are priorities, not the only readable universe. Shared audience and device/cloud scope are distinct.
+- **Library handoff:** open a source and choose “Use this source in AI.” It appears as visible priority context while authorized Workspace discovery remains available. No message, index or Task starts from navigation.
+- **Assistant/capability authoring:** create a bounded draft, validate, publish an immutable sample version, activate, then bind an assistant to a Project. Skills, Packages and MCP descriptors share version/dependency mechanics but have distinct purposes. The MCP preview does not connect or run code.
+- **Coordinated work:** explicitly accept one goal and a cumulative sample budget. Three child Tasks share a brief: Page research and Collection inspection, then a reviewer waiting for both. Scoped worker messages and dependency state are inspectable. Explicit simulation cycles produce an artifact; the parent completes only after exact publication review.
+- **Automation:** save a draft rule, preview without execution, enable, simulate one occurrence, replay the same occurrence without creating duplicate work, and pause future triggers. No real schedule is registered.
+- **Page AI Sidebar:** ask beside a Page, optionally attach a current selection, expand the same conversation into the AI view, create an append proposal, and approve against the current Page revision. An unsaved Page draft blocks commit; Ask does not write.
 
-Private-owned pages, individually shared Private pages, and read-only Shared-with-me pages are distinct. Teamspace overview shows its existing Projects and Pages; private nonmember spaces are hidden while closed spaces expose only a restricted shell.
+The original A Studio / B Focus / C Console layouts, light/dark themes, mobile navigation, Page/Teamspace flows, Task/Artifact review, stale-destination and unknown-effect scenarios remain. No final production visual direction is approved by this commit.
 
-Page creation exposes Save to and an independent optional Project link. Private sources cannot silently join shared Project context. Page moves preview the full sample subtree and audience change; stale content/destination versions invalidate the preview. Project affiliation changes do not move source pages. The sample Page editor is plain text, not the production collaborative editor.
+## Suggested walkthrough
 
-The prior Source/Highlight/Chat/Work/Artifact flows remain interactive: explicit Task acceptance, fixed criteria, context attachments without sends, stale publication review and unknown-effect verification without resend. No schedule or provider is activated by a simulation control.
+1. Library → a source → **Use this source in AI**. Inspect the visible handoff and optional broader context.
+2. AI → Assistants → **Create assistant** → save/check/publish/activate → bind for future Project work. Explore the corresponding Skill, Package and MCP authoring forms.
+3. AI → Workspace context. Compare authorized Workspace discovery, Project audience, Page-only scope, and device history on different simulated routes.
+4. AI → Coordination → accept a goal → run three **explicit simulated cycles** → inspect assignments/messages → review the coordinated artifact → publish to the demo destination.
+5. Private → My working notes → **Ask AI beside this Page** → ask → draft continuation → approve the exact append → open the same conversation in AI.
+6. AI → Automations → draft/preview/enable → simulate occurrence → replay → pause. Open its actual shared Task reference.
 
-## Try the integrated flow
-
-Open Private → My working notes. Star the Page; it appears in Favorites without leaving Private. Open Link to project: the team Project is blocked for audience mismatch, while the personal Project can accept a reference. Open Move to…, select a Teamspace and Preview move. The parent and child appear together. Simulate an intervening edit: confirmation is blocked until another preview. After an allowed move, object IDs and Favorites still resolve the same content.
-
-From Project Sources, Open original page shows actual ownership and a return link. From a Teamspace, opening a Project resolves the same object as the global Projects index.
-
-## Tests and boundaries
+## Verification
 
 ```sh
 npm test
 python -m pip install -r tests/requirements.txt
 python -m playwright install chromium
+npm run test:ai-browser
 npm run test:browser
-npm run test:workspace-browser
 ```
 
-Build/typecheck and **56 model tests passed**. Against the final standalone build, **16 baseline + 11 Workspace browser cases passed**. One separate actual-file/reload test was **BLOCKED** by `ERR_BLOCKED_BY_ADMINISTRATOR`, not passed; no attempt was made to bypass that policy. Browser interaction checks use Chromium `set_content` and memory fallback. Real-origin persistence, native platforms, full accessibility, 200% browser zoom, production editor/IME, multiuser sync and real ACL/provider effects remain unverified.
+The Workspace browser suite includes a separate file-origin persistence case. In this environment that case had previously been blocked by administrator policy; it is not bypassed or counted as PASS. Run the other cases with the documented filter in the handoff.
 
-The environment used installed TypeScript 5.8.3 and Node 22.16.0. Dependencies are locked, but `npm ci` was not exercised there. See the exact artifact hash and cases in evidence.json. Generated screenshots, safe logs and prebuilt files accompany the downloadable ZIP; dist/artifacts/node_modules are not committed source.
+Final local validation: strict TypeScript build; **90 model/router/storage tests**; **40 Chromium scenarios** (16 original, 11 safe Workspace, 13 AI). Each browser case uses `set_content` on the final standalone HTML and checks uncaught errors and network requests. This proves fixture interactions in memory mode, not production ACL, real-origin storage, actual file opening, native clients, full editor/IME/collaboration, a complete accessibility audit or live autonomous execution. Exact results and artifact digest are in `tests/evidence.json`.
 
-## Source of truth
+The environment used installed Node 22.16.0 / TypeScript 5.8.3 and Chromium 144.0.7559.96. The dependency is locked; `npm ci` was not executed here. Generated previews, logs and screenshots accompany the conversation ZIP; `dist/`, artifacts and node_modules are not committed.
 
-[PW-UI-1.1 specification PR #111](https://github.com/verdeln/docs/pull/111) defines the production intent. This repository's original [PR #1](https://github.com/verdeln/product-design/pull/1) continues on `verde/project-workspace-prototype`, targeting main. No production design direction has been selected or application repository modified.
+## Design and contribution boundaries
 
-Strict TypeScript and native DOM are used for this study. Port approved composition into the existing React/TanStack shell and real domain ports; do not copy the simulator as a backend, authorization layer or second document authority. Production PW/WNI gates remain NOT_RUN.
+The implementation is strict TypeScript and native DOM, not a production React/TanStack integration. Port selected component behavior to the existing shell and actual authority ports; never reuse simulator guards as server authorization or sample completion as real evidence.
+
+Production specification: `verdeln/docs/shared/architecture/project-workspace/ui/`, PW-UI-1.2 chapters 12–14. PW-UI-1.1 stable navigation remains. Application `CONTEXT.md` supplies existing Page/Collection/Task/Run/Package/route contracts. Use `verde/*` branches and PRs to `main`; do not add secrets or real customer data.
