@@ -1,0 +1,24 @@
+{
+  "name": "@verdeln/website-poc-nuxt",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "build:poc": "nuxt generate",
+    "preview": "nuxt preview",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@nuxt/content": "3.16.0",
+    "@nuxt/ui": "4.11.1",
+    "nuxt": "4.5.2",
+    "tailwindcss": "4.3.3"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vue-tsc": "3.3.11"
+  }
+}
