@@ -1,6 +1,6 @@
 # Verdlen website stack PoC
 
-Status: non-production technical comparison. Synthetic public content only.
+Status: non-production technical comparison. Synthetic public content only. Current execution evidence: [results/STATUS.md](results/STATUS.md).
 
 This experiment compares two candidate implementations for the future standalone Verdlen website:
 
@@ -22,6 +22,6 @@ The PoC does not connect to production APIs, accounts, analytics, billing, templ
 
 ## Evidence
 
-GitHub Actions installs each implementation independently, builds/prerenders it, runs a static-route smoke check, records output/source metrics, and publishes the evidence as workflow artifacts. Local package installation was not available in the authoring environment, so no local build is claimed.
+GitHub Actions is configured to install each implementation independently, build/prerender it, run a static-route smoke check, record output/source metrics, and publish the evidence as workflow artifacts. The first run failed before any job step was executed, and the authoring container could not resolve the npm registry, so no package-backed build result is currently claimed. The exact blocked state is recorded in [results/STATUS.md](results/STATUS.md).
 
 See [criteria.md](criteria.md) for the decision rubric. A later architecture ADR in `verdeln/docs` should consume actual workflow evidence before replacing the currently recorded website stack decision.
