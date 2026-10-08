@@ -1,27 +1,47 @@
-# v0.2 scope and production handoff
+# v0.3 scope and production handoff
 
-Canonical intent: PW-1.0 and PW-UI-1.1 in verdeln/docs, including PR #111 and chapter 11. This repository is synthetic and must never become an alternative domain or security authority.
+Production intent remains PW-1.0 and PW-UI-1.2 in `verdeln/docs`, including stable navigation chapter 11 and Workspace AI chapters 12–14. This synthetic repository is never an alternative content, Task or security authority.
 
 ## Ownership
 
-`model.ts` retains the original Task/action/artifact/source/page fixture semantics. `workspace-model.ts` composes them with typed navigation references, page location/access metadata, Teamspaces, Favorites and separate navigation commands. It does not store a second body or Task lifecycle. `workspace-views.ts` renders the stable tree, Project-local sections, canonical Page/Teamspace screens and explicit move/share/link/create dialogs. `app.ts` selects the new composition and handles input. The old unused navigation helper in views.ts is not the active sidebar. router.ts adds fixture Page/Teamspace routes. workspace.css extends the existing prototype aliases; it is not a new production token system.
+The original model.ts and workspace-model.ts own the existing fixture bodies, Tasks, artifacts, navigation, page location and personal references. ai-model.ts adds component authoring/releases, one native Collection sample, session metadata, context receipts, assignment relationships, scoped messages, automation occurrences and Page proposal metadata. Session records refer to IDs in the existing messages array, not copied transcripts. Coordination refers to the actual root/child Task objects; its displayed status is derived.
 
-## Implemented interactions
+ai-workbench.ts owns view composition and input translation through narrow host callbacks. app.ts connects it with the existing Workspace shell, dialogs, source views and Page editor. ai.css extends prototype aliases only. The production client should preserve its mounted React/editor sessions and consume actual typed authority ports; the prototype's synchronous full-markup rerender is not a production rendering design.
 
-Stable Workspace content groups across all existing routes; typed personal Page/Project Favorites and ordering; Page trees and explicit-share markers; restricted Shared-with-me; Teamspace Projects/Pages views with the same identities; canonical source/Page opening with actual location and safe return/backlinks; plain-text editing and per-Page in-memory draft preservation; explicit create destination/optional source link; private-source/shared-project compatibility checks; complete sample subtree move preview, stale rejection and ID preservation; separate Project affiliation changes. Original task, source, artifact review and unknown-effect workflows remain.
+## Connected behavior
 
-## Deliberate limitations
+Workspace discovery can locate permitted Pages, Collection data and other sources beyond attached Project material. Missing Page/Project identities do not silently widen a requested narrow scope. Opt-in history preserves device/cloud boundaries. Receipts distinguish exact reads from partial/unmaterialized results. Source revocation suppresses derived answers in the AI history view and subsequent history retrieval. These checks run only against local synthetic data, which remains physically present: they do not establish backend security or complete derived-data disclosure enforcement.
 
-All guards operate on locally available synthetic data. Real ACL, multi-account isolation, server revocation, complete derived-data disclosure, attachment access, collaboration, resource governance and side effects are not implemented. Source compatibility for Project affiliation is not a complete production review: decisions, conversations, artifacts, automation principals and active runs also need real checks. Page sharing uses one fictional reader; no actual member invitations. Teamspace creation/settings and real Trash deletion remain unimplemented. The plain-text Page editor does not test block selection, IME or CRDT semantics.
+A goal creates a root Task, two research Tasks, and a dependent review Task. They share a fixed brief, exact assistant versions and cumulative budget. Simulated cycles check current context, capabilities, dependencies and unknown-effect barriers. Questions do not rewrite goals or grant tools. Child completion produces an accepted sample artifact, not automatic publication. The parent requires the existing exact review/publication receipt. There is no actual model planner, scheduler, worker service or remote bot communication.
 
-The prototype uses synchronous mock state updates and rerenders markup. Production must keep the stable shell mounted, consume authorized lightweight observations, preserve native editor state, and reconcile typed commands through real domain owners. Large-tree virtualization, concurrent Favorites reorder, versioned preference synchronization and actual subtree/attachment policy enforcement remain production work. No Page/Task storage migration is justified merely by changing navigation.
+Page AI shares conversation/message identity with the full AI screen. Ask is read-only. A draft append is separate from content; acceptance checks the Page revision and refuses an uncommitted human draft. Existing Page text drafts survive view changes. This is not the real block editor, relative-anchor engine, CRDT, IME or production undo history.
 
-## Verification
+## Coverage versus target
 
-Final build: strict TypeScript 5.8.3, Node 22.16.0. Model tests: 56 passed. Chromium 144.0.7559.96: 16 existing plus 11 integration scenarios passed against the final standalone bytes. An independent actual-file/reload-persistence case was blocked by administrator policy before opening the file. Its status is BLOCKED, not PASS; no workaround bypass was attempted. set_content tests exercise in-memory fallback, not real-origin storage. The exact hash and case lists are recorded in tests/evidence.json.
+| Area | Implemented here | Still required for production |
+| --- | --- | --- |
+| Navigation | Stable Favorites/Private/Shared/Teamspaces; nine AI views and Project shortcuts. | Real React routing/query/overlay integration and localization. |
+| Context | Native sample Page/Collection/source/history discovery, priority handoff, exact receipts and revoked-answer checks. | Actual providers, scalable queries, provenance enforcement, secrets and egress admission. |
+| Assistants/Skills/Packages | Bounded draft, validation, fixed release, activation, dependency state and Project binding. | Complete five-step builder, nested return-safe authoring, import/signature checks, installation and sandbox trials. |
+| MCP | HTTPS descriptor form and simulated lifecycle. | OAuth, protocol discovery, Tools/Resources/Prompts, real connections, local host isolation and credentials. |
+| Coordination | Root/child Task references, dependencies, shared budget, scoped messages and artifact review. | Durable autonomous scheduling, actual LLMs, verifier/evaluator authority and external executors. |
+| Automations | Draft/preview/enable, explicit occurrence, deduplication and pause. | Real clock/webhooks, conditions, DST/misfires, service principals and provider recovery. |
+| Page AI | Same session, Page/selection context, append preview, stale/dirty checks. | Mounted editor selection/IME, streaming typed blocks, canonical commit/undo and collaboration. |
 
-Visual inspection covered current desktop stable navigation, canonical Page, move review and mobile navigation. Full-page browser screenshots can show a fixed dialog/backdrop over only the initial viewport; curated handoff images use viewport captures for mobile. These are not a full accessibility or visual-diff audit. npm ci, live provider actions, Figma, public deployment, native Electron/iOS/Android, Safari/Firefox and 200% actual browser zoom were not exercised.
+A simulated component check is not malicious-code verification. Activation is not an actual permission grant. An assistant is not a human Workspace member. Sample receipts are not cryptographic proofs. A descriptor is not a working MCP server. No real provider, file upload, external message, model or bill is created.
 
-## Production adoption
+## Actual final local verification
 
-Map the stable Workspace tree and Project section components onto existing React routes and @verdeln/ui. Extend page-only Favorites to typed references without losing existing IDs/order. Keep Page bodies and Task state in their existing owners. Move/share/link/publish commands require current actor, exact operation basis, disclosure checks and durable receipts. Replace every simulator completion or permission guard with real authority evidence. Preserve the original PW-UI gates and add WNI-01–WNI-16; none becomes a production PASS because this prototype passes.
+90 model/router/storage tests (56 baseline + 34 AI), and 40 browser scenarios (16 baseline + 11 Workspace + 13 AI). Node22.16.0, TypeScript5.8.3, Chromium144.0.7559.96. Browser suites use final standalone HTML through set_content and check uncaught errors and network requests. Exact lists and build digest: tests/evidence.json. Screenshots were visually inspected for AI Assistants, Page Sidebar and Coordination; this is not automated visual-diff or accessibility certification.
+
+The earlier actual-file/reload test was administrator-blocked and remains BLOCKED; no bypass or PASS claim. Real-origin/file-origin persistence, npm ci, Safari/Firefox, native Electron/iOS/Android, full a11y/actual 200% zoom, live providers, Figma and public hosting were not tested. The pinned installed compiler was used without dependency installation. All production PW/WNI/WAI gates remain NOT_RUN.
+
+Safe Workspace browser subset:
+
+```sh
+CASE_FILTER=stable-sidebar,project-source,typed-favorites,subtree-visibility,private-to-shared,private-sharing,creation-destination,teamspace-project,private-hidden,mobile-stable,unsaved-page npm run test:workspace-browser
+```
+
+## Adoption
+
+Port approved presentation to the existing React shell and @verdeln/ui. Preserve real Page/Collection/Task/Run/Package owners. Replace every simulation command, budget, receipt and read guard with actual authorization, current version checks and durable settlement. Keep autonomous work within accepted scope without asking again for every routine read; retain human review at the protected boundary. Do not mistake explicit simulator cycle buttons for the intended production scheduler UX.
