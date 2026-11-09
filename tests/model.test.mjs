@@ -42,4 +42,4 @@ test('persisted demo snapshots round-trip after publication',()=>{const r=accept
 test('corrupt and obsolete stored states are rejected',()=>{for(const raw of ['{bad','null','{}','{"schema":0}',JSON.stringify({...seed(),tasks:[{}]})])assert.equal(storage.parseSaved(raw),null);});
 test('malformed routes fail closed, valid detail survives deep-link parse',()=>{assert.equal(router.parseRoute('#/projects/editor/work?kind=task&item=brief').item,'brief');assert.equal(router.parseRoute('#/projects/editor/missing').invalid,true);assert.equal(router.parseRoute('#/%E0%A4%A').invalid,true);assert.equal(router.parseRoute('#/projects/editor?kind=evil&item=x').invalid,true);});
 test('user content is escaped rather than interpreted as markup',()=>{assert.equal(ui.h('<img src=x onerror="alert(1)">'),'&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');assert(!ui.markdown('## <script>alert(1)</script>').includes('<script>'));});
-test('temporary CI failure and recovery verification',()=>assert.equal(2 + 2,5));
+test('temporary CI failure and recovery verification',()=>assert.equal(2 + 2,4));
