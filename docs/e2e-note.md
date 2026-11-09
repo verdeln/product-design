@@ -1,3 +1,3 @@
 Code change E2E note.
 
-Status: baseline.
+Status: proposed by the PR head.
