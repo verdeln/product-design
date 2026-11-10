@@ -61,3 +61,7 @@ The environment used installed Node 22.16.0 / TypeScript 5.8.3 and Chromium 144.
 The implementation is strict TypeScript and native DOM, not a production React/TanStack integration. Port selected component behavior to the existing shell and actual authority ports; never reuse simulator guards as server authorization or sample completion as real evidence.
 
 Production specification: `verdeln/docs/shared/architecture/project-workspace/ui/`, PW-UI-1.2 chapters 12–14. PW-UI-1.1 stable navigation remains. Application `CONTEXT.md` supplies existing Page/Collection/Task/Run/Package/route contracts. Use `verde/*` branches and PRs to `main`; do not add secrets or real customer data.
+
+## Temporary protocol-version verification
+
+`src/e2e-agent-value.ts` exports a monotonically increasing protocol version. When concurrent branches increment it, retain the greater version, and update the paired `tests/e2e-agent-value.test.mjs` assertion to the same version. This preserves the newer protocol contract without lowering it. Run `npm test` and `npm run typecheck` after merging.
