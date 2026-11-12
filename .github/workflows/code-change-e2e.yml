@@ -1,0 +1,15 @@
+name: CodeChange E2E
+on:
+  pull_request:
+    branches: ['e2e/code-change-1794307153-*-base']
+permissions:
+  contents: read
+jobs:
+  code-change-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/code-change-e2e.test.mjs
