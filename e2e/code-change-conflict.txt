@@ -1,1 +1,3 @@
 The PR branch retained its reviewed note.
+The scratch base gained independent revision 1794489443381.
+A competing base note 1794489443381.
