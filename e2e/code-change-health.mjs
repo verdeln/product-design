@@ -1,1 +1,1 @@
-export const health = "red";
+export const health = 'green';
