@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://verdeln.example/</loc></url>
+  <url><loc>https://verdeln.example/help/getting-started</loc></url>
+  <url><loc>https://verdeln.example/docs/editor-sdk</loc></url>
+  <url><loc>https://verdeln.example/templates</loc></url>
+  <url><loc>https://verdeln.example/templates/project-kit</loc></url>
+  <url><loc>https://verdeln.example/zh-cn/help/getting-started</loc></url>
+</urlset>
