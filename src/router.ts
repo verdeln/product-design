@@ -21,3 +21,4 @@ export function projectPath(id: string, section: Section = 'overview'): string {
 export function basePath(r: Route): string { return (r.area==='pages'||r.area==='teamspaces') && r.resource ? `/${r.area}/${encodeURIComponent(r.resource)}` : r.project ? projectPath(r.project, r.section) : r.area === 'home' ? '/' : '/' + r.area; }
 export function detailPath(r: Route, kind: DetailKind, id: string, full = false): string { const q = new URLSearchParams({ kind, item: id }); if (full) q.set('full', '1'); return `${basePath(r)}?${q}`; }
 export function navigate(path: string, replace = false): void { if (replace) { history.replaceState(null, '', '#' + path); dispatchEvent(new HashChangeEvent('hashchange')); } else location.hash = path; }
+const routerState = {
