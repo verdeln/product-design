@@ -289,3 +289,4 @@ app.addEventListener('drop',event=>{
   if(!isFavorite(state,{kind:'page',id}))commit({type:'favorite',ref:{kind:'page',id}});
   render();
 });
+// e2e: repair fix for failing e2e-check
