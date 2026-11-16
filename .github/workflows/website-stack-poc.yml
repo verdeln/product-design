@@ -1,0 +1,93 @@
+name: Website stack PoC
+
+on:
+  pull_request:
+    paths:
+      - 'experiments/website-stack-poc/**'
+      - '.github/workflows/website-stack-poc.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build-${{ matrix.stack }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [nuxt, tanstack-fumadocs]
+    defaults:
+      run:
+        working-directory: experiments/website-stack-poc/${{ matrix.stack }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install
+        env:
+          STACK: ${{ matrix.stack }}
+        run: |
+          mkdir -p ../results
+          SECONDS=0
+          npm install --no-audit --no-fund
+          echo "$SECONDS" > "../results/${STACK}-install-seconds.txt"
+      - name: Build and typecheck
+        env:
+          STACK: ${{ matrix.stack }}
+        run: |
+          SECONDS=0
+          npm run build:poc
+          echo "$SECONDS" > "../results/${STACK}-build-seconds.txt"
+          npm run typecheck
+      - name: Smoke prerendered public routes
+        run: |
+          test -d .output/public
+          python3 -m http.server 3000 --directory .output/public >/tmp/website-poc-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          for n in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then break; fi
+            sleep 0.25
+          done
+          for route in / /help/getting-started /docs/editor-sdk /templates /templates/project-kit /zh-cn/help/getting-started /search /robots.txt /sitemap.xml; do
+            curl -fsS "http://127.0.0.1:3000${route}" >/tmp/website-poc-page
+            grep -qi 'Verdlen\|User-agent\|urlset' /tmp/website-poc-page
+          done
+      - name: Measure build
+        env:
+          STACK: ${{ matrix.stack }}
+        run: |
+          INSTALL_SECONDS=$(cat "../results/${STACK}-install-seconds.txt")
+          BUILD_SECONDS=$(cat "../results/${STACK}-build-seconds.txt")
+          node ../scripts/measure.mjs "$STACK" . "$INSTALL_SECONDS" "$BUILD_SECONDS"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-stack-${{ matrix.stack }}
+          path: experiments/website-stack-poc/results/${{ matrix.stack }}.json
+          if-no-files-found: error
+
+  compare:
+    name: compare-evidence
+    needs: build
+    if: ${{ always() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: website-stack-*
+          path: experiments/website-stack-poc/results/collected
+          merge-multiple: true
+      - name: Build comparison summary
+        run: |
+          node experiments/website-stack-poc/scripts/compare.mjs experiments/website-stack-poc/results/collected
+          cat experiments/website-stack-poc/results/collected/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-stack-comparison
+          path: |
+            experiments/website-stack-poc/results/collected/summary.md
+            experiments/website-stack-poc/results/collected/summary.json

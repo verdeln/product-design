@@ -1,0 +1,11 @@
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { SiteShell } from '@/components/site-shell'
+
+export const Route = createFileRoute('/')({
+  head: () => ({ meta: [{ title: 'Local-first workspace for work that matters · Verdlen' }, { name: 'description', content: 'Verdlen keeps personal work useful locally and adds collaboration deliberately.' }], links: [{ rel: 'canonical', href: 'https://verdeln.example/' }] }),
+  component: Home
+})
+
+function Home() {
+  return <SiteShell><main><section className="container hero"><div><p className="eyebrow">Local first · AI ready</p><h1>Your work stays yours. Collaboration stays explicit.</h1><p className="lede">Verdlen is a workspace for pages, structured collections and accountable AI workflows. Start on one device. Add cloud services when they create value.</p><div className="hero-actions"><Link className="button primary" to="/help/$" params={{ _splat: 'getting-started' }}>Read the local-first guide</Link><Link className="button" to="/templates">Browse templates</Link></div></div><div className="mock" aria-label="Synthetic Verdlen interface preview"><div className="mock-bar"><span className="dot"/><span className="dot"/><span className="dot"/></div><div className="mock-body"><div className="mock-nav">Private<br/>Projects<br/>Teamspaces<br/>Library<br/>AI</div><div className="mock-content"><span className="eyebrow">Project brief</span><br/><b>Autumn launch</b><div className="mock-line accent"/><div className="mock-line"/><div className="mock-line short"/><div className="mock-line"/></div></div></div></section><section className="container grid"><article className="card"><span className="eyebrow">01</span><h2>Local ownership</h2><p>Personal content remains useful without a cloud subscription. Sync is a separate product decision.</p></article><article className="card"><span className="eyebrow">02</span><h2>Structured work</h2><p>Collections provide reusable views without turning presentation components into a second data authority.</p></article><article className="card"><span className="eyebrow">03</span><h2>Accountable AI</h2><p>Tasks, runs, sources and effects remain distinguishable so automation can be reviewed and recovered.</p></article></section></main></SiteShell>
+}

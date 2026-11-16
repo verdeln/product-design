@@ -1,0 +1,10 @@
+export type TemplateListing = { slug: string; title: string; description: string; category: string; capabilities: string[]; status: 'available' | 'preview' }
+
+export const templates: TemplateListing[] = [{
+  slug: 'project-kit',
+  title: 'Project operating kit',
+  description: 'A public listing fixture for pages, a collection view and a project brief without exposing protected template payloads.',
+  category: 'project-management',
+  capabilities: ['pages', 'collection.board', 'project.references'],
+  status: 'preview'
+}]
