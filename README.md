@@ -61,3 +61,5 @@ The environment used installed Node 22.16.0 / TypeScript 5.8.3 and Chromium 144.
 The implementation is strict TypeScript and native DOM, not a production React/TanStack integration. Port selected component behavior to the existing shell and actual authority ports; never reuse simulator guards as server authorization or sample completion as real evidence.
 
 Production specification: `verdeln/docs/shared/architecture/project-workspace/ui/`, PW-UI-1.2 chapters 12–14. PW-UI-1.1 stable navigation remains. Application `CONTEXT.md` supplies existing Page/Collection/Task/Run/Package/route contracts. Use `verde/*` branches and PRs to `main`; do not add secrets or real customer data.
+
+<!-- e2e: code-change card test -->
