@@ -63,3 +63,4 @@ The implementation is strict TypeScript and native DOM, not a production React/T
 Production specification: `verdeln/docs/shared/architecture/project-workspace/ui/`, PW-UI-1.2 chapters 12–14. PW-UI-1.1 stable navigation remains. Application `CONTEXT.md` supplies existing Page/Collection/Task/Run/Package/route contracts. Use `verde/*` branches and PRs to `main`; do not add secrets or real customer data.
 
 <!-- e2e: code-change card test -->
+<!-- e2e: flow2 auto-repair -->
